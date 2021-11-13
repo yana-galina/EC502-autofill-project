@@ -1,2 +1,2 @@
 # EC502-autofill-project
-ENG EC502 Project Fall 2021
+ENG EC521 Project Fall 2021
