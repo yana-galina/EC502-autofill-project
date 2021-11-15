@@ -1,6 +1,7 @@
 "use strict";
 browser.runtime.onMessage.addListener(count);
 
+
 function onError(error) {
     console.error(`Error: ${error}`);
 }
@@ -22,5 +23,8 @@ browser.tabs.onUpdated.addListener((tabId, changed) => {
 )
 
 function count(message) {
-    browser.browserAction.setBadgeText({text: message.count.toString()});
+    if(message.count) {
+        browser.browserAction.setBadgeText({text: message.count.toString()});
+    }
+
 }
