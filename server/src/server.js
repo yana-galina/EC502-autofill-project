@@ -13,8 +13,15 @@ app.get('/', function(req, res) {
 
 app.get('/hidden_attribute', function(req, res) {
 	res.sendFile(path.join(__dirname, 'pages', 'hidden_attribute.html'));
-  
-})
+});
+
+app.get('/hidden_attribute2', function(req, res) {
+	res.sendFile(path.join(__dirname, 'pages', 'hidden_attribute2.html'));
+});
+
+app.get('/out_of_sight', function(req, res) {
+	res.sendFile(path.join(__dirname, 'pages', 'out_of_sight.html'));
+});
 
 app.listen(port, () => {
 	console.log(`Server has started on port ${port}`);
