@@ -8,15 +8,23 @@ function run_func(message) {
 
     }
 }
+
+// function check(input) {
+//     console.log();
+// }
+
 function find_fields() {
     let input_list = [];
-    let inputs = document.getElementsByTagName("input")
+    let checked_list = [];
+    let inputs = document.querySelectorAll("input")
     if (inputs.length > 0) {
 
         for (let input of inputs) {
 
             if (input.type !== "button" && input.type !== "submit") {
                 // console.log(input.type)
+                // checked_list.push(check(input));
+                // check(input);
                 input_list.push((input.name) ? input.name : input.value);
                 input.style.border = "2px solid red";
             }
@@ -26,7 +34,7 @@ function find_fields() {
         //
         // console.log(inputs);
         // console.log(`There are ${inputs}`)
-        browser.runtime.sendMessage({"count": input_list.length, "fields": input_list});
+        browser.runtime.sendMessage({"count": input_list.length, "fields": input_list, "checked": checked_list});
 
     }
 }
