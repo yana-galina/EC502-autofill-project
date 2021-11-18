@@ -36,15 +36,26 @@ function findForm() {
 
   // recursively sums up the "margin-left" of all elements going from the input element 
   // up until the parent form element. 
-  var allParents = (el) => {
-    var margin = parseInt(window.getComputedStyle(el).getPropertyValue('margin-left'));
+  var getRecursivePropertySum = (el, property) => {
+    var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM") return margin;
+    if (parent.nodeName == "FORM") return prop;
 
-    return margin + allParents(parent);
-
-
+    return prop + getRecursivePropertySum(parent, property);
   };
+
+  // check if el has a name that could be exploited by autofill
+  var hasRelevantName = (el) => {
+    potential_names = ["name", "first-name","last-name", "organization", "address",
+     "city", "state", "zip", "phone", "phone-number", "email"];
+
+    if (potential_names.includes(el.getAttribute("name"))) {
+      return true;
+    }
+
+    return false;
+
+  }
 
 
   var margins = [];
@@ -57,7 +68,8 @@ function findForm() {
     margins = [];
 
     for (let input of inputs) {
-      margins.push(allParents(input))
+      margins.push(getRecursivePropertySum(input, 'margin-left'));
+      console.log("rl " + input.getAttribute("name") + "has relevant name? " + hasRelevantName(input));
 
     }
 
@@ -82,7 +94,7 @@ function findForm() {
     }
 
     if (differing_margins.length > 1) {
-      alert("potential suspicous hidden inputs " + differing_margins);
+      alert("potential suspicous hidden inputs with margins " + differing_margins);
     }
 
   }
