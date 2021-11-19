@@ -1,4 +1,4 @@
-browser.runtime.onMessage.addListener(run_func);
+chrome.runtime.onMessage.addListener(run_func);
 function run_func(message) {
     if(message.greeting === "run"){
         find_fields();
@@ -29,9 +29,9 @@ function find_fields() {
         // browser.browserAction.setBadgeText({text: "1"});
         // alert(`There are ${inputs.length} input fields with these names: ${input_list}`);
         //
-        // console.log(inputs);
+        console.log(inputs);
         // console.log(`There are ${inputs}`)
-        browser.runtime.sendMessage({"count": input_list.length, "fields": input_list, "checked": checked_list});
+        chrome.runtime.sendMessage({"count": input_list.length, "fields": input_list, "checked": checked_list});
 
     }
 }
