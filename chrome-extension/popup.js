@@ -1,16 +1,16 @@
-// Initialize button with user's preferred color
-let changeColor = document.getElementById("changeColor");
+// // Initialize button with user's preferred color
+// let changeColor = document.getElementById("changeColor");
 
 
-// When the button is clicked, inject setPageBackgroundColor into current page
-changeColor.addEventListener("click", async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+// // When the button is clicked, inject setPageBackgroundColor into current page
+// changeColor.addEventListener("click", async () => {
+//   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: findForm,
-  });
-});
+//   chrome.scripting.executeScript({
+//     target: { tabId: tab.id },
+//     function: findForm,
+//   });
+// });
 
 
 function allDescendants (el) {
@@ -100,54 +100,12 @@ function findForm() {
 
 
 
-chrome.runtime.onMessage.addListener(run_func);
-
-
-function run_func(request, sender, sendResponse) {
-    console.log('run func called');
-    if(request.greeting === "run"){
-        find_fields();
-    }
-    if(request.message === "start"){
-       find_fields();
-
-    }
-}
-
-
-
-function find_fields() {
-    let input_list = [];
-    let checked_list = [];
-    let inputs = document.querySelectorAll("input")
-    if (inputs.length > 0) {
-
-        for (let input of inputs) {
-
-            if (input.type !== "button" && input.type !== "submit") {
-                // console.log(input.type)
-                // checked_list.push(check(input));
-                // check(input);
-                input_list.push((input.name) ? input.name : input.value);
-                input.style.border = "2px solid red";
-            }
-        }
-        // browser.browserAction.setBadgeText({text: "1"});
-        // alert(`There are ${inputs.length} input fields with these names: ${input_list}`);
-        //
-        console.log(inputs);
-        console.log(`There are ${inputs}`)
-        browser.runtime.sendMessage({"count": input_list.length, "fields": input_list, "checked": checked_list});
-
-    }
-}
-
-
-
 chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
     var activeTab = tabs[0];
     chrome.tabs.sendMessage(activeTab.id, {"message": "start"});
 });
+
+
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
     console.log('got msg ' + message);
     msg = JSON.stringify(message.count);

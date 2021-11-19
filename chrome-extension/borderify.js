@@ -29,6 +29,7 @@ function find_fields() {
         // browser.browserAction.setBadgeText({text: "1"});
         // alert(`There are ${inputs.length} input fields with these names: ${input_list}`);
         //
+        console.log("in borderify");
         console.log(inputs);
         // console.log(`There are ${inputs}`)
         chrome.runtime.sendMessage({"count": input_list.length, "fields": input_list, "checked": checked_list});
