@@ -2,19 +2,16 @@
 
 
 
-let color = '#3aa757';
-
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({ color });
-  console.log('Default background color set to %cgreen', `color: ${color}`);
-});
-
-
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-  	console.log(request);
-  	if(request.count) {
+  	console.log('bg.js: ' + request);
+    if (request.pageSuspicious) {
+      console.log("page suspicous")
+        chrome.action.setBadgeText({text: "!"});
+    }
+  	else if(request.count) {
+        console.log("page not suspicous");
         chrome.action.setBadgeText({text: request.count.toString()});
     }
   }
@@ -49,7 +46,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
 	  console.log("tab onupdate")
     let queryOptions = { active: true, currentWindow: true };
     let ts = await chrome.tabs.query(queryOptions);
-    console.log("activate tab: " + ts);
+    console.log("update tab: " + ts);
     sendMessageToTabs(ts);
   } catch (error) {
     console.error("got an error");
@@ -60,3 +57,20 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
 
 });
 
+
+
+chrome.tabs.onActivated.addListener(async (tabId, changeInfo) => {
+  try{
+    console.log("tab onactivated")
+    let queryOptions = { active: true, currentWindow: true };
+    let ts = await chrome.tabs.query(queryOptions);
+    console.log("activate tab: " + ts);
+    sendMessageToTabs(ts);
+  } catch (error) {
+    console.error("got an error");
+
+    console.error("My error:" + error);
+
+  }
+
+});
