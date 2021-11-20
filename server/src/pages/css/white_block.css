@@ -1,0 +1,16 @@
+#form {
+	position: fixed;
+	top: 10px;
+	left: 10px;
+	z-index: 8;
+}
+
+#white-block {
+	position: absolute;
+	top: 160px;
+	left: 10px;
+	width: 100%;
+	height: 200px;
+	z-index: 9;
+	background-color: white;
+}
