@@ -83,7 +83,7 @@ function investigateInputs() {
         else {
             let found_bucket = false;
             for (let m of differing_margins) {
-                if (Math.abs(inp.margin - m) < 200) {
+                if (Math.abs(inp.margin - m.margin) < 200) {
                     found_bucket = true;
                     m.inputs.push(i);
                     break;
@@ -96,7 +96,7 @@ function investigateInputs() {
     });
 
 
-
+    // console.log("differing_margins", differing_margins);
     if (differing_margins.length > 1) {
         form_inputs = form_inputs.map((el) => {
             if (el.hasRelevantName) {
@@ -112,9 +112,7 @@ function investigateInputs() {
         // alert("potential suspicous hidden inputs with margins " + differing_margins);
     }
     all_inputs.push(...form_inputs);
-
   }
-
   return {'pageSuspicious': pageSuspicious, 'inputs': all_inputs};
 
 }
@@ -123,7 +121,7 @@ function investigateInputs() {
 
 function find_fields() {
     var results = investigateInputs();
-    console.log(results)
+    console.log("Investigated page: ", results);
 
     chrome.runtime.sendMessage({
         "count": results.inputs.length, 
@@ -131,5 +129,4 @@ function find_fields() {
         "pageSuspicious": results.pageSuspicious,
     }); 
 
-    // }
 }
