@@ -341,7 +341,12 @@
         var elem = document.getElementsByName(name);
         elem[0].setAttribute("hidden", true);
       };
+
     });
+  </script>
+  <script type='module'>
+    import { detect_script } from './detect_script.js';
+    detect_script();
   </script>
 </body>
 
