@@ -13,6 +13,34 @@ function run_func(message) {
 }
 
 
+function hiddenBehindOtherElement(el) {
+    var all = document.getElementsByTagName("*");
+
+    var el_box = el.getBoundingClientRect();
+
+    for (let i = 0; i< all.length; i++) {
+        let el2 = all[i];
+
+        if (el2.contains(el)) {
+            continue;
+        }
+
+        let el2_box = el2.getBoundingClientRect();
+
+        if(el_box.x >= el2_box.x && el_box.right <= el2_box.right &&
+            el_box.y >= el2_box.y && el_box.bottom <= el2_box.bottom) {
+
+            return true;
+        }
+
+
+    }
+
+    return false;
+}
+
+
+
 // The body of this function will be executed as a content script inside the
 // current page
 function investigateInputs() {
@@ -81,6 +109,15 @@ function investigateInputs() {
             form_inputs[i][prop] = margin;
 
         }
+
+        if (form_inputs[i].hasRelevantName) {
+            if (hiddenBehindOtherElement(input)) {
+                console.log("hidden hiddenBehindOtherElement");
+                form_inputs[i].isSuspicious = true;
+                pageSuspicious = true;   
+            }
+        }
+
 
     };
 
