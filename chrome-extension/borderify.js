@@ -35,7 +35,7 @@ function investigateInputs() {
             "name", "first-name", "middle-name",
             "last-name", "organization", "address",
             "city", "state", "zip", "phone", "postal",
-            "phone-number", "email"
+            "phone-number", "email", "cc_number", "cc_cvv",
         ];
 
         
@@ -55,6 +55,8 @@ function investigateInputs() {
   var form_inputs = [];
   var margin = null;
 
+  var props = ["margin-left", "margin-right", "margin-bottom", "margin-top", "margin"]
+
   var pageSuspicious = false;
 
   for (let form of forms) {
@@ -62,55 +64,71 @@ function investigateInputs() {
     inputs      =  form.getElementsByTagName("input");
     margins     = [];
     form_inputs = [];
-    for (let input of inputs) {
-        margin = getRecursivePropertySum(input, 'margin-left');
 
+    // inputs.forEach((input, i) => {
+    for (let i = 0; i < inputs.length; i++) {
+        let input = inputs[i];
         form_inputs.push({
-            'element': input, 
-            'name': input.getAttribute("name") ? input.getAttribute("name") : "None",
-            'isSuspicious': false, 
-            'margin': margin, 
-            'hasRelevantName': hasRelevantName(input)
+                'element': input, 
+                'name': input.getAttribute("name") ? input.getAttribute("name") : "None",
+                'isSuspicious': false, 
+                // prop: margin, 
+                'hasRelevantName': hasRelevantName(input)
         });
 
-    }
+        for (let prop of props) {
+            margin = getRecursivePropertySum(input, prop);
+            form_inputs[i][prop] = margin;
 
-    differing_margins = [];
-    form_inputs.forEach((inp, i) => {
-        if (differing_margins.length == 0) {
-            differing_margins.push({'margin': inp.margin, 'inputs': [i]});
         }
-        else {
-            let found_bucket = false;
-            for (let m of differing_margins) {
-                if (Math.abs(inp.margin - m.margin) < 200) {
-                    found_bucket = true;
-                    m.inputs.push(i);
-                    break;
+
+    };
+
+    console.log("form inputs", form_inputs);
+
+
+     
+
+    for (let prop of props) {
+        differing_margins = [];
+        form_inputs.forEach((inp, i) => {
+            if (differing_margins.length == 0) {
+                differing_margins.push({prop: inp[prop], 'inputs': [i]});
+            }
+            else {
+                let found_bucket = false;
+                for (let m of differing_margins) {
+                    if (Math.abs(inp[prop] - m[prop]) < 200) {
+                        found_bucket = true;
+                        m.inputs.push(i);
+                        break;
+                    }
+                }
+                if (!found_bucket) {
+                    differing_margins.push({prop: inp[prop], 'inputs': [i]});
                 }
             }
-            if (!found_bucket) {
-                differing_margins.push({'margin': inp.margin, 'inputs': [i]})
-            }
-        }
-    });
-
-
-    // console.log("differing_margins", differing_margins);
-    if (differing_margins.length > 1) {
-        form_inputs = form_inputs.map((el) => {
-            if (el.hasRelevantName) {
-                pageSuspicious = true;
-                 return {
-                    ...el, 
-                    isSuspicious: true,
-                };
-            }
-            else return el;
-           
         });
-        // alert("potential suspicous hidden inputs with margins " + differing_margins);
+
+
+        // console.log("differing_margins", differing_margins);
+        if (differing_margins.length > 1) {
+            form_inputs = form_inputs.map((el) => {
+                if (el.hasRelevantName) {
+                    pageSuspicious = true;
+                     return {
+                        ...el, 
+                        isSuspicious: true,
+                    };
+                }
+                else return el;
+               
+            });
+            // alert("potential suspicous hidden inputs with margins " + differing_margins);
+        }
+
     }
+
     all_inputs.push(...form_inputs);
   }
   return {'pageSuspicious': pageSuspicious, 'inputs': all_inputs};
