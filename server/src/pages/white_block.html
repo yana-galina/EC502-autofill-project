@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="css/white_block.css">
   </head>
   <body>
+  <h3>This form uses a white background overlay to cover up the hidden inputs.</h3>
+
     <div id="form">
       <form action="https://httpbin.org/post" method="post">
         <div id="visible-block">
@@ -38,13 +40,13 @@
       </form>
     </div>
     <div id="white-block"></div>
-    <script type="text/javascript">
+    <!-- <script type="text/javascript">
       function onchangehandler(event) {
         // Print out its value. Could be a web request without users' knowledge.
         console.log(event.target.name + ": " + event.target.value);
       }
       // Apply 'input' event to every input element
       document.querySelectorAll('input').forEach(function(input) { input.addEventListener('input', onchangehandler); } );
-    </script>
+    </script> -->
   </body>
 </html>
