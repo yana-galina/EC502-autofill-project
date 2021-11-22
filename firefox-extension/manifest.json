@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "InputScanner",
+  "version": "1.0",
+  "description": "Analyzes input forms",
+  "browser_action": {
+    "default_icon": {
+      "96": "icons/icon.png"
+    },
+    "default_title": "InputScanner",
+    "default_popup": "popup/index.html"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "borderify.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "tabs"
+  ]
+}
+
