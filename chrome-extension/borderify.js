@@ -172,6 +172,15 @@ function investigateInputs() {
                 form_inputs[i].isSuspicious = true;
                 pageSuspicious = true;   
             }
+
+            // check for 0 width or height
+            if (window.getComputedStyle(input).width == "0px" ||
+                window.getComputedStyle(input).height == "0px") {
+                console.log("width attack");
+                form_inputs[i].isSuspicious = true;
+                pageSuspicious = true;   
+
+            }
         }
 
 
@@ -206,6 +215,7 @@ function investigateInputs() {
 
         // console.log("differing_margins", differing_margins);
         if (differing_margins.length > 1) {
+            console.log("margin attack");
             form_inputs = form_inputs.map((el) => {
                 if (el.hasRelevantName) {
                     pageSuspicious = true;
