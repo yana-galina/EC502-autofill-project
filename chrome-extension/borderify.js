@@ -101,6 +101,31 @@ var recursiveAttrHasValue = (el, attr,value) => {
 };
 
 
+var hasAncestorOverflow = (el) => {
+    let node = el;
+    let parent = node.parentNode;
+    while (parent.nodeName != "FORM") {
+        if (document.defaultView.getComputedStyle(parent).overflow == 'hidden') {
+            let parent_box = parent.getBoundingClientRect();
+            let el_box = el.getBoundingClientRect();
+            // check if element is outside of parent's box 
+            if (el_box.left   >= parent_box.right || el_box.right <= parent_box.right ||
+                el_box.bottom >= parent_box.top   || el_box.top   <= parent_box.bottom) {
+
+                return true;
+            }
+
+        }
+        node = parent;
+        parent = node.parentNode;
+    }
+
+
+    return false
+
+
+}
+
 
 // The body of this function will be executed as a content script inside the
 // current page
@@ -180,6 +205,12 @@ function investigateInputs() {
                 form_inputs[i].isSuspicious = true;
                 pageSuspicious = true;   
 
+            }
+
+            if (hasAncestorOverflow(input)) {
+                console.log("ancestor overflow attack");
+                form_inputs[i].isSuspicious = true;
+                pageSuspicious = true;  
             }
         }
 
