@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Attribute Form</title>
+</head>
+
+<body>
+  <form action="https://httpbin.org/post" method="post">
+    <p>
+      <label for="name">Name</label><br>
+      <input id="name" name="name" type="text" placeholder="Your Name">
+    </p>
+    <p>
+      <label for="email">Email</label><br>
+      <input id="email" name="email" type="email" placeholder="Your Email">
+    </p>
+    <p>
+      <input type="submit" value="Submit">
+    </p>
+    <div style="opacity: 10%;">
+        <p style="opacity: 1%;">
+            <input id="phone" name="phone" type="text" placeholder="Your Phone">
+        </p>
+    </div>
+    <div style="opacity: 10%;">
+        <p style="opacity: 1%;">
+            <input id="organization" name="organization" type="text" placeholder="Your Organization">
+        </p>
+    </div>
+    <div style="opacity: 10%;">
+        <p style="opacity: 1%;">
+            <input id="address" name="address" type="text" placeholder="Your Address">
+        </p>
+    </div>
+    <div style="opacity: 10%;">
+        <p style="opacity: 1%;">
+              <input id="postal" name="postal" type="text" placeholder="Your Postal Code">
+        </p>
+    </div>
+    <div style="opacity: 10%;">
+        <p style="opacity: 1%;">
+            <input id="city" name="city" type="text" placeholder="Your City">
+        </p>
+    </div>
+ 
+  </form>
+  <script type='module'>
+    import { detect_script } from './detect_script.js';
+    detect_script();
+  </script>
+</body>
+
+</html>

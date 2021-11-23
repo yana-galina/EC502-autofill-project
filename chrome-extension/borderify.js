@@ -30,6 +30,9 @@ function hiddenBehindOtherElement(el) {
         if(el_box.x >= el2_box.x && el_box.right <= el2_box.right &&
             el_box.y >= el2_box.y && el_box.bottom <= el2_box.bottom) {
 
+            console.log("hidden behind detection");
+            console.log("box", el_box.x, el_box.right, el_box.y, el_box.bottom);
+            console.log("box2", el2_box.x, el2_box.right, el2_box.y, el2_box.bottom);
             return true;
         }
 
@@ -40,25 +43,8 @@ function hiddenBehindOtherElement(el) {
 }
 
 
-
-// The body of this function will be executed as a content script inside the
-// current page
-function investigateInputs() {
-    // get all forms on a page
-    const forms  = document.getElementsByTagName("form");
-
-     // recursively sums up the "margin-left" of all elements going from the input element 
-    // up until the parent form element. 
-    var getRecursivePropertySum = (el, property) => {
-        var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
-        let parent = el.parentNode;
-        if (parent.nodeName == "FORM") return prop;
-
-        return prop + getRecursivePropertySum(parent, property);
-    };
-
     // check if el has a name that could be exploited by autofill
-    var hasRelevantName = (el) => {
+var hasRelevantName = (el) => {
         potential_names = [
             "name", "first-name", "middle-name",
             "last-name", "organization", "address",
@@ -73,7 +59,56 @@ function investigateInputs() {
 
         return false;
 
-    }
+}
+
+var recursivePropHasValue = (el, property,value) => {
+    var prop = window.getComputedStyle(el).getPropertyValue(property);
+    if (prop == value) return true;
+
+    let parent = el.parentNode;
+    if (parent.nodeName == "FORM") return false;
+
+    return recursivePropHasValue(parent, property, value);    
+};
+ 
+ // recursively sums up the "margin-left" of all elements going from the input element 
+// up until the parent form element. 
+var getRecursivePropertySum = (el, property) => {
+    var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
+    let parent = el.parentNode;
+    if (parent.nodeName == "FORM") return prop;
+
+    return prop + getRecursivePropertySum(parent, property);
+};
+
+
+var getRecursivePropertyProduct = (el, property) => {
+    var prop = parseFloat(window.getComputedStyle(el).getPropertyValue(property));
+    let parent = el.parentNode;
+    if (parent.nodeName == "FORM") return prop;
+
+    return prop*getRecursivePropertyProduct(parent, property);
+};
+
+var recursiveAttrHasValue = (el, attr,value) => {
+    var prop = el[attr];
+    if (prop == value) return true;
+
+    let parent = el.parentNode;
+    if (parent.nodeName == "FORM") return false;
+
+    return recursiveAttrHasValue(parent, attr, value);    
+};
+
+
+
+// The body of this function will be executed as a content script inside the
+// current page
+function investigateInputs() {
+    // get all forms on a page
+    const forms  = document.getElementsByTagName("form");
+
+
 
 
   var margins = [];
@@ -113,6 +148,27 @@ function investigateInputs() {
         if (form_inputs[i].hasRelevantName) {
             if (hiddenBehindOtherElement(input)) {
                 console.log("hidden hiddenBehindOtherElement");
+                form_inputs[i].isSuspicious = true;
+                pageSuspicious = true;   
+            }
+
+            // check for display:none attack
+            if (recursivePropHasValue(input, "display", "none")) {
+                console.log("display none attack");
+                form_inputs[i].isSuspicious = true;
+                pageSuspicious = true;   
+            }
+
+            // check for opacity attack
+            if (getRecursivePropertyProduct(input, "opacity") < 0.1) {
+                console.log("opacity attack");
+                form_inputs[i].isSuspicious = true;
+                pageSuspicious = true;   
+            }
+
+            // check for 'hidden' attack
+            if (recursiveAttrHasValue(input, "hidden", true)) {
+                console.log("hidden attack");
                 form_inputs[i].isSuspicious = true;
                 pageSuspicious = true;   
             }
