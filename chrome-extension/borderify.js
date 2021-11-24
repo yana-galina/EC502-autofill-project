@@ -296,7 +296,7 @@ function investigateInputs() {
             warning_div.innerHTML = 'AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList;
         }
         else {
-            let warning = '<div id="autofill-warning-div">AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList + "</div>";
+            let warning = '<div id="autofill-warning-div" style="padding:20px;background-color:red;color:white;border-radius:15px;font-weight: bold;">AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList + "</div>";
 
             form.insertAdjacentHTML('beforebegin', warning);
         }
