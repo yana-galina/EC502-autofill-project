@@ -48,8 +48,8 @@ var hasRelevantName = (el) => {
         potential_names = [
             "name", "first-name", "middle-name",
             "last-name", "organization", "address",
-            "city", "state", "zip", "phone", "postal",
-            "phone-number", "email", "cc_number", "cc_cvv",
+            "city", "state", "country", "zip", "phone", "postal",
+            "phone-number", "email", "cc_number", "cc_cvv", "cc_month", "cc_year",
         ];
 
         
@@ -116,6 +116,24 @@ var hasAncestorOverflow = (el) => {
             }
 
         }
+        else if (document.defaultView.getComputedStyle(parent).overflowX == 'hidden') {
+            let parent_box = parent.getBoundingClientRect();
+            let el_box = el.getBoundingClientRect();
+            // check if element is outside of parent's box 
+            if (el_box.left   >= parent_box.right || el_box.right <= parent_box.right) {
+                return true;
+            }
+
+        }
+        else if (document.defaultView.getComputedStyle(parent).overflowY == 'hidden') {
+            let parent_box = parent.getBoundingClientRect();
+            let el_box = el.getBoundingClientRect();
+            // check if element is outside of parent's box 
+            if (el_box.bottom >= parent_box.top   || el_box.top   <= parent_box.bottom) {
+                return true;
+            }
+
+        }
         node = parent;
         parent = node.parentNode;
     }
@@ -133,6 +151,7 @@ var isHiddenByMargins = (el) => {
     return false;
 };
 
+
 // The body of this function will be executed as a content script inside the
 // current page
 function investigateInputs() {
@@ -148,13 +167,16 @@ function investigateInputs() {
   var all_inputs  = [];
   var form_inputs = [];
 
-  var bool_props = ["display_none", "no_opacity", "hidden_attr", "hidden_behind", "no_width", "ancestor_overflow", "margin_hidden"]
+  var bool_props = ["display_none", "no_opacity", "hidden_attr", "visibility_hidden", "hidden_behind", "no_width", "ancestor_overflow", "margin_hidden"]
 
   var pageSuspicious = false;
 
   for (let form of forms) {
     // get all inputs that are a child of this form
-    inputs      =  form.getElementsByTagName("input");
+    // inputs      =  form.getElementsByTagName("input");
+    inputs      =  form.querySelectorAll("input, select");
+
+    // inputs.push(...form.getElementsByTagName("select"));
     form_inputs = [];
 
     let formHasVisibleRelevantInput = false;
@@ -165,7 +187,7 @@ function investigateInputs() {
         let input = inputs[i];
         form_inputs.push({
                 'element': input, 
-                'name': input.getAttribute("name") ? input.getAttribute("name") : "None",
+                'name': input.name ? input.name : input.type ? input.type : "None",
                 'isSuspicious': false, 
                 'hasRelevantName': hasRelevantName(input)
         });
@@ -176,6 +198,7 @@ function investigateInputs() {
         });
 
         if (form_inputs[i].hasRelevantName) {
+            let computedStyle = window.getComputedStyle(input);
             if (hiddenBehindOtherElement(input)) {
                 console.log("hiddenBehindOtherElement attack");
                 form_inputs[i].isSuspicious = true;
@@ -204,6 +227,14 @@ function investigateInputs() {
                 console.log("hidden attack");
                 form_inputs[i].isSuspicious = true;
                 form_inputs[i].hidden_attr  = true;
+                formHasHiddenRelevantInput = true;
+            }
+
+            // check for  visibilit='hidden' or 'collapse' attack
+            if (computedStyle.visibility == 'hidden' || computedStyle.visibility == 'collapse') {
+                console.log("visibility hidden attack");
+                form_inputs[i].isSuspicious = true;
+                form_inputs[i].visibility_hidden  = true;
                 formHasHiddenRelevantInput = true;
             }
 
@@ -250,6 +281,27 @@ function investigateInputs() {
     if (formHasVisibleRelevantInput && formHasHiddenRelevantInput) {
         pageSuspicious = true;
         console.log('form has visible relevant input and hidden relevant input');
+
+        var susList = "<ul>";
+        for (let inp of form_inputs) {
+            if (inp.isSuspicious) {
+                susList += "<li>" + inp.name + "</li>";
+            }
+        }
+        susList += "</ul>";
+
+        var warning_div = document.getElementById("autofill-warning-div")
+
+        if (warning_div) {
+            warning_div.innerHTML = 'AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList;
+        }
+        else {
+            let warning = '<div id="autofill-warning-div">AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList + "</div>";
+
+            form.insertAdjacentHTML('beforebegin', warning);
+        }
+
+ 
 
     }
 
