@@ -122,10 +122,16 @@ var hasAncestorOverflow = (el) => {
 
 
     return false
+};
 
-
-}
-
+var isHiddenByMargins = (el) => {
+    let box = el.getBoundingClientRect();
+    if (box.right < 0 || box.left > (window.innerWidth || document.documentElement.clientWidth) ||
+        box.bottom < 0 || box.top > (window.innerHeight || document.documentElement.clientHeight)) {
+        return true
+    }
+    return false;
+};
 
 // The body of this function will be executed as a content script inside the
 // current page
@@ -141,17 +147,18 @@ function investigateInputs() {
   var inputs;
   var all_inputs  = [];
   var form_inputs = [];
-  var margin = null;
 
-  var props = ["margin-left", "margin-right", "margin-bottom", "margin-top", "margin"]
+  var bool_props = ["display_none", "no_opacity", "hidden_attr", "hidden_behind", "no_width", "ancestor_overflow", "margin_hidden"]
 
   var pageSuspicious = false;
 
   for (let form of forms) {
     // get all inputs that are a child of this form
     inputs      =  form.getElementsByTagName("input");
-    margins     = [];
     form_inputs = [];
+
+    let formHasVisibleRelevantInput = false;
+    let formHasHiddenRelevantInput  = false;
 
     // inputs.forEach((input, i) => {
     for (let i = 0; i < inputs.length; i++) {
@@ -160,42 +167,44 @@ function investigateInputs() {
                 'element': input, 
                 'name': input.getAttribute("name") ? input.getAttribute("name") : "None",
                 'isSuspicious': false, 
-                // prop: margin, 
                 'hasRelevantName': hasRelevantName(input)
         });
 
-        for (let prop of props) {
-            margin = getRecursivePropertySum(input, prop);
-            form_inputs[i][prop] = margin;
 
-        }
+        bool_props.forEach((prop) => {
+            form_inputs[i][prop] = false;
+        });
 
         if (form_inputs[i].hasRelevantName) {
             if (hiddenBehindOtherElement(input)) {
-                console.log("hidden hiddenBehindOtherElement");
+                console.log("hiddenBehindOtherElement attack");
                 form_inputs[i].isSuspicious = true;
-                pageSuspicious = true;   
+                form_inputs[i].hidden_behind = true;
+                formHasHiddenRelevantInput = true;
             }
 
             // check for display:none attack
             if (recursivePropHasValue(input, "display", "none")) {
                 console.log("display none attack");
                 form_inputs[i].isSuspicious = true;
-                pageSuspicious = true;   
+                form_inputs[i].display_none = true;
+                formHasHiddenRelevantInput = true;
             }
 
             // check for opacity attack
             if (getRecursivePropertyProduct(input, "opacity") < 0.1) {
                 console.log("opacity attack");
                 form_inputs[i].isSuspicious = true;
-                pageSuspicious = true;   
+                form_inputs[i].no_opacity   = true;
+                formHasHiddenRelevantInput = true;
             }
 
             // check for 'hidden' attack
             if (recursiveAttrHasValue(input, "hidden", true)) {
                 console.log("hidden attack");
                 form_inputs[i].isSuspicious = true;
-                pageSuspicious = true;   
+                form_inputs[i].hidden_attr  = true;
+                formHasHiddenRelevantInput = true;
             }
 
             // check for 0 width or height
@@ -203,14 +212,28 @@ function investigateInputs() {
                 window.getComputedStyle(input).height == "0px") {
                 console.log("width attack");
                 form_inputs[i].isSuspicious = true;
-                pageSuspicious = true;   
+                form_inputs[i].no_width     = true;
+                formHasHiddenRelevantInput = true;
 
             }
 
             if (hasAncestorOverflow(input)) {
                 console.log("ancestor overflow attack");
-                form_inputs[i].isSuspicious = true;
-                pageSuspicious = true;  
+                form_inputs[i].isSuspicious      = true;
+                form_inputs[i].ancestor_overflow = true;
+                formHasHiddenRelevantInput = true;
+            }
+
+            if (isHiddenByMargins(input)) {
+                console.log("margin attack");
+                form_inputs[i].isSuspicious  = true;
+                form_inputs[i].margin_hidden = true;
+                formHasHiddenRelevantInput = true;
+            }
+
+
+            if (!form_inputs[i].isSuspicious) {
+                formHasVisibleRelevantInput = true
             }
         }
 
@@ -219,49 +242,18 @@ function investigateInputs() {
 
     console.log("form inputs", form_inputs);
 
-
-     
-
-    for (let prop of props) {
-        differing_margins = [];
-        form_inputs.forEach((inp, i) => {
-            if (differing_margins.length == 0) {
-                differing_margins.push({prop: inp[prop], 'inputs': [i]});
-            }
-            else {
-                let found_bucket = false;
-                for (let m of differing_margins) {
-                    if (Math.abs(inp[prop] - m[prop]) < 200) {
-                        found_bucket = true;
-                        m.inputs.push(i);
-                        break;
-                    }
-                }
-                if (!found_bucket) {
-                    differing_margins.push({prop: inp[prop], 'inputs': [i]});
-                }
-            }
-        });
+// to count as a proper attack, a form must have:
+// (1) At least ONE visible field with a relevant name
+// (2) At least ONE hidden field with a relevant name
 
 
-        // console.log("differing_margins", differing_margins);
-        if (differing_margins.length > 1) {
-            console.log("margin attack");
-            form_inputs = form_inputs.map((el) => {
-                if (el.hasRelevantName) {
-                    pageSuspicious = true;
-                     return {
-                        ...el, 
-                        isSuspicious: true,
-                    };
-                }
-                else return el;
-               
-            });
-            // alert("potential suspicous hidden inputs with margins " + differing_margins);
-        }
+    if (formHasVisibleRelevantInput && formHasHiddenRelevantInput) {
+        pageSuspicious = true;
+        console.log('form has visible relevant input and hidden relevant input');
 
     }
+
+    
 
     all_inputs.push(...form_inputs);
   }
