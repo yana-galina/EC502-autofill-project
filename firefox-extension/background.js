@@ -26,5 +26,4 @@ function count(message) {
     if(message.count_suspicious) {
         browser.browserAction.setBadgeText({text: message.count_suspicious.toString()});
     }
-
 }

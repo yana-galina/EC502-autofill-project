@@ -17,5 +17,5 @@ browser.runtime.onMessage.addListener(function(message,sender,sendResponse){
     });
 
     document.querySelector("#table_body").innerHTML = table_body;
-
+  
 });

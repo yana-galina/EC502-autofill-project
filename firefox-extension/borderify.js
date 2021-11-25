@@ -327,5 +327,4 @@ function find_fields() {
         "fields": JSON.parse(JSON.stringify(results.inputs)),
         "pageSuspicious": results.pageSuspicious,
     });
-
 }
