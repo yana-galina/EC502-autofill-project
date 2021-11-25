@@ -5,11 +5,17 @@ browser.tabs.query({currentWindow: true, active: true}, function (tabs){
 browser.runtime.onMessage.addListener(function(message,sender,sendResponse){
     msg = JSON.stringify(message.count);
     document.querySelector("#counter").innerHTML = message.count.toString() + " Fields on Page";
-    message.fields.forEach(function (field, i) {
-        document.querySelector("#table_body").innerHTML += "<tr id='" + i + "'><th scope=\"row\">"+ i +"</th><td>" + field + "</td></tr>";
-        console.log(field);
+    let table_body = "";
+    message.fields.forEach((field, i) => {
+        let el = null;
+        if (field.isSuspicious) {
+            table_body +=  "<tr style='color: red;' id='row-" + i + "'><th scope=\"row\">"+ (i+1).toString() +"</th><td>" + field.name + "</td></tr>";
+        }
+        else {
+            table_body +=  "<tr id='row-" + i + "'><th scope=\"row\">"+ (i+1).toString() +"</th><td>" + field.name + "</td></tr>";
+        }
     });
 
-    console.log(message.fields);
+    document.querySelector("#table_body").innerHTML = table_body;
 
 });

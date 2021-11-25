@@ -23,8 +23,8 @@ browser.tabs.onUpdated.addListener((tabId, changed) => {
 )
 
 function count(message) {
-    if(message.count) {
-        browser.browserAction.setBadgeText({text: message.count.toString()});
+    if(message.count_suspicious) {
+        browser.browserAction.setBadgeText({text: message.count_suspicious.toString()});
     }
 
 }
