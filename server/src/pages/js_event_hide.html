@@ -9,6 +9,8 @@
 </head>
 
 <body>
+  <h3>This form uses 'DOMContentLoaded' event handler to hide the inputs during runtime when page loads.</h3>
+
   <form action="https://httpbin.org/post" method="post">
     <p>
       <label for="name">Name</label><br>
@@ -344,10 +346,10 @@
 
     });
   </script>
-  <script type='module'>
+  <!-- <script type='module'>
     import { detect_script } from './detect_script.js';
     detect_script();
-  </script>
+  </script> -->
 </body>
 
 </html>
