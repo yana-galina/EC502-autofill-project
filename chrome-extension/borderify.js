@@ -14,30 +14,30 @@ function run_func(message) {
 
 
 function hiddenBehindOtherElement(el) {
-    var all = document.getElementsByTagName("*");
 
     var el_box = el.getBoundingClientRect();
 
-    for (let i = 0; i< all.length; i++) {
-        let el2 = all[i];
+    var top_els =  document.elementsFromPoint(el_box.x + el_box.width/2, el_box.y + el_box.height/2);
 
-        if (el2.contains(el)) {
-            continue;
-        }
+    for (let i = 0; i< top_els.length; i++) {
+        let top_el = top_els[i];
+        if (top_el == el) return false;
 
-        let el2_box = el2.getBoundingClientRect();
+        if (top_el.contains(el)) continue; 
+        let computedStyle = window.getComputedStyle(top_el);
 
-        if(el_box.x >= el2_box.x && el_box.right <= el2_box.right &&
-            el_box.y >= el2_box.y && el_box.bottom <= el2_box.bottom) {
 
-            console.log("hidden behind detection");
-            console.log("box", el_box.x, el_box.right, el_box.y, el_box.bottom);
-            console.log("box2", el2_box.x, el2_box.right, el2_box.y, el2_box.bottom);
-            return true;
-        }
+        if(computedStyle.visibility == 'hidden' ||
+            computedStyle.zIndex == 0 || 
+            computedStyle.opacity == 0 ||
+            computedStyle.display == 'none'
+            // recursivePropHasValue(el2, "display", "none", "BODY")) continue;
+        ) continue;
 
+        return true;
 
     }
+
 
     return false;
 }
@@ -46,14 +46,18 @@ function hiddenBehindOtherElement(el) {
     // check if el has a name that could be exploited by autofill
 var hasRelevantName = (el) => {
         potential_names = [
-            "name", "first-name", "firstName", "middle-name",
-            "last-name", "lastName", "organization", "address",
+            "name", "first-name", "middle-name", "firstname", "lastname",
+            "last-name", "organization", "address",
             "city", "state", "country", "zip", "phone", "postal",
             "phone-number", "email", "cc_number", "cc_cvv", "cc_month", "cc_year",
         ];
 
-        
-        if (potential_names.includes(el.getAttribute("name"))) {
+        let name = el.getAttribute("name");
+        let type = el.getAttribute("type");
+
+
+        if ( (name && potential_names.includes(name.toLowerCase())) ||
+         (type && potential_names.includes(type.toLowerCase())) ) {
             return true;
         }
 
@@ -61,12 +65,13 @@ var hasRelevantName = (el) => {
 
 }
 
-var recursivePropHasValue = (el, property,value) => {
+var recursivePropHasValue = (el, property,value, stopName="FORM") => {
     var prop = window.getComputedStyle(el).getPropertyValue(property);
     if (prop == value) return true;
 
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM") return false;
+    console.log(parent.nodeName, stopName);
+    if (parent.nodeName == stopName || parent.nodeName == "BODY") return false;
 
     return recursivePropHasValue(parent, property, value);    
 };
@@ -156,7 +161,7 @@ var isHiddenByMargins = (el) => {
 // current page
 function investigateInputs() {
     // get all forms on a page
-    const forms  = document.getElementsByTagName("form");
+    const forms  = document.getElementsByTagName("FORM");
 
 
 
@@ -174,7 +179,7 @@ function investigateInputs() {
   for (let form of forms) {
     // get all inputs that are a child of this form
     // inputs      =  form.getElementsByTagName("input");
-    inputs      =  form.querySelectorAll("input, select");
+    inputs      =  form.querySelectorAll("INPUT, SELECT");
 
     // inputs.push(...form.getElementsByTagName("select"));
     form_inputs = [];
