@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Replacement Attack Form</title>
+</head>
+
+<body>
+  <h3>This form replaces hidden elements with dropdown once input is clicked.</h3>
+  <form action="https://httpbin.org/post" method="post">
+    <p>
+      <label for="name">Name</label><br>
+      <input id="name" name="name" type="text" placeholder="Your Name">
+    </p>
+    <p>
+      <label for="email">Email</label><br>
+      <input id="email" name="email" type="email" placeholder="Your Email">
+    </p>
+    <p>
+      <input type="submit" value="Submit">
+    </p>
+    <p>
+      <input id="phone" name="phone" type="text" placeholder="Your Phone">
+    </p>
+    <p hidden>
+      <input id="phone1" name="phone" type="text" placeholder="Your Phone">
+    </p>
+    <p hidden>
+      <input id="phone2" name="phone" type="text" placeholder="Your Phone">
+    </p>
+  </form>
+  <!-- <script type='module'>
+    import { detect_script } from './detect_script.js';
+    detect_script();
+  </script> -->
+  <script>
+    var el = document.getElementById('phone');
+
+    el.addEventListener('click', function () {
+      alert('Clicked on phone input');
+      var phoneInputNames = ['phone1', 'phone2'];
+
+      for (var name of phoneInputNames) {
+        var elem = document.getElementsByName(name);
+        elem[0].setAttribute("hidden", true);
+      };
+
+    })
+
+  </script>
+</body>
+
+</html>
