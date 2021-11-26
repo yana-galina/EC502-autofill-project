@@ -46,8 +46,8 @@ function hiddenBehindOtherElement(el) {
     // check if el has a name that could be exploited by autofill
 var hasRelevantName = (el) => {
         potential_names = [
-            "name", "first-name", "middle-name",
-            "last-name", "organization", "address",
+            "name", "first-name", "firstName", "middle-name",
+            "last-name", "lastName", "organization", "address",
             "city", "state", "country", "zip", "phone", "postal",
             "phone-number", "email", "cc_number", "cc_cvv", "cc_month", "cc_year",
         ];
