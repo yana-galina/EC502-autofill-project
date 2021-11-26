@@ -81,7 +81,7 @@ var recursivePropHasValue = (el, property,value, stopName="FORM") => {
 var getRecursivePropertySum = (el, property) => {
     var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM") return prop;
+    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return prop;
 
     return prop + getRecursivePropertySum(parent, property);
 };
@@ -90,7 +90,7 @@ var getRecursivePropertySum = (el, property) => {
 var getRecursivePropertyProduct = (el, property) => {
     var prop = parseFloat(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM") return prop;
+    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return prop;
 
     return prop*getRecursivePropertyProduct(parent, property);
 };
@@ -100,7 +100,7 @@ var recursiveAttrHasValue = (el, attr,value) => {
     if (prop == value) return true;
 
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM") return false;
+    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return false;
 
     return recursiveAttrHasValue(parent, attr, value);    
 };
@@ -109,32 +109,36 @@ var recursiveAttrHasValue = (el, attr,value) => {
 var hasAncestorOverflow = (el) => {
     let node = el;
     let parent = node.parentNode;
-    while (parent.nodeName != "FORM") {
-        if (document.defaultView.getComputedStyle(parent).overflow == 'hidden') {
+    while (parent.nodeName != "FORM" && parent.nodeName != "BODY") {
+        if (window.getComputedStyle(parent).overflow == 'hidden') {
             let parent_box = parent.getBoundingClientRect();
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box 
             if (el_box.left   >= parent_box.right || el_box.right <= parent_box.right ||
                 el_box.bottom >= parent_box.top   || el_box.top   <= parent_box.bottom) {
-
+                console.log("overflow with ", parent);
                 return true;
             }
 
         }
-        else if (document.defaultView.getComputedStyle(parent).overflowX == 'hidden') {
+        else if (window.getComputedStyle(parent).overflowX == 'hidden') {
             let parent_box = parent.getBoundingClientRect();
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box 
-            if (el_box.left   >= parent_box.right || el_box.right <= parent_box.right) {
+            if (el_box.left   >= parent_box.right || el_box.right <= parent_box.left) {
+                console.log("overflow with ", parent);
+
                 return true;
             }
 
         }
-        else if (document.defaultView.getComputedStyle(parent).overflowY == 'hidden') {
+        else if (window.getComputedStyle(parent).overflowY == 'hidden') {
             let parent_box = parent.getBoundingClientRect();
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box 
             if (el_box.bottom >= parent_box.top   || el_box.top   <= parent_box.bottom) {
+                console.log("overflow with ", parent);
+
                 return true;
             }
 
@@ -157,35 +161,15 @@ var isHiddenByMargins = (el) => {
 };
 
 
-// The body of this function will be executed as a content script inside the
-// current page
-function investigateInputs() {
-    // get all forms on a page
-    const forms  = document.getElementsByTagName("FORM");
 
-
-
-
-  var margins = [];
-  var differing_margins = [];
-  var inputs;
-  var all_inputs  = [];
-  var form_inputs = [];
-
-  var bool_props = ["display_none", "no_opacity", "hidden_attr", "visibility_hidden", "hidden_behind", "no_width", "ancestor_overflow", "margin_hidden"]
-
-  var pageSuspicious = false;
-
-  for (let form of forms) {
-    // get all inputs that are a child of this form
-    // inputs      =  form.getElementsByTagName("input");
-    inputs      =  form.querySelectorAll("INPUT, SELECT");
-
-    // inputs.push(...form.getElementsByTagName("select"));
-    form_inputs = [];
-
+function investigateInputs(inputs) {
+    var form_inputs = [];
     let formHasVisibleRelevantInput = false;
     let formHasHiddenRelevantInput  = false;
+
+    var pageSuspicious = false;
+    var bool_props = ["display_none", "no_opacity", "hidden_attr", "visibility_hidden", "hidden_behind", "no_width", "ancestor_overflow", "margin_hidden"]
+
 
     // inputs.forEach((input, i) => {
     for (let i = 0; i < inputs.length; i++) {
@@ -278,9 +262,9 @@ function investigateInputs() {
 
     console.log("form inputs", form_inputs);
 
-// to count as a proper attack, a form must have:
-// (1) At least ONE visible field with a relevant name
-// (2) At least ONE hidden field with a relevant name
+    // to count as a proper attack, a form must have:
+    // (1) At least ONE visible field with a relevant name
+    // (2) At least ONE hidden field with a relevant name
 
 
     if (formHasVisibleRelevantInput && formHasHiddenRelevantInput) {
@@ -303,25 +287,73 @@ function investigateInputs() {
         else {
             let warning = '<div id="autofill-warning-div" style="padding:20px;background-color:red;color:white;border-radius:15px;font-weight: bold;">AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList + "</div>";
 
-            form.insertAdjacentHTML('beforebegin', warning);
+            // form.insertAdjacentHTML('beforebegin', warning);
         }
-
- 
 
     }
 
-    
+    console.log("testing");
 
-    all_inputs.push(...form_inputs);
-  }
-  return {'pageSuspicious': pageSuspicious, 'inputs': all_inputs};
+    let result =  {"pageSuspicious": pageSuspicious, "inputs": form_inputs};
+
+    return result;
+
+}
+
+// The body of this function will be executed as a content script inside the
+// current page
+function investigatePage() {
+    // get all forms on a page
+    const forms  = document.getElementsByTagName("FORM");
+    var margins = [];
+    var differing_margins = [];
+    var inputs;
+    var all_inputs  = [];
+    var form_inputs = [];
+
+
+    var pageSuspicious = false;
+
+    for (let form of forms) {
+        // get all inputs that are a child of this form
+        inputs      =  form.querySelectorAll("INPUT, SELECT");
+        let info = investigateInputs(inputs);
+        console.log('info', info);
+
+        if (info.pageSuspicious) {
+            pageSuspicious = true;
+        }
+
+        all_inputs.push(...info.inputs);
+    }
+
+
+    // get all inputs that are not a child of a form
+    var formless_inputs = [];
+    var ins = document.querySelectorAll("INPUT, SELECT");
+    for (let inp of ins) {
+        if (!inp.closest("form")) {
+            formless_inputs.push(inp);
+        }
+    }
+    console.log("formless inputs", formless_inputs);
+    let info = investigateInputs(formless_inputs);
+    console.log('formless info', info);
+
+    if (info.pageSuspicious) {
+        pageSuspicious = true;
+    }
+
+    all_inputs.push(...info.inputs);
+
+    return {'pageSuspicious': pageSuspicious, 'inputs': all_inputs};
 
 }
 
 
 
 function find_fields() {
-    var results = investigateInputs();
+    var results = investigatePage();
     console.log("Investigated page: ", results);
 
     chrome.runtime.sendMessage({
