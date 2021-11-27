@@ -45,20 +45,73 @@ function hiddenBehindOtherElement(el) {
 
     // check if el has a name that could be exploited by autofill
 var hasRelevantName = (el) => {
-        potential_names = [
-            "name", "first-name", "middle-name", "firstname", "lastname",
-            "last-name", "organization", "address",
-            "city", "state", "country", "zip", "phone", "postal",
-            "phone-number", "email", "cc_number", "cc_cvv", "cc_month", "cc_year",
+        /* 
+        taken from https://source.chromium.org/chromium/chromium/src/+/main:out/chromeos-Debug/gen/components/autofill/core/browser/pattern_provider/default_regex_patterns.cc;
+        */
+
+        let company_re = /company|business|organization|organisation/;
+
+        let addr1_re  = /^address$|address[_-]?line(one)?|address1|addr1|street|(?:shipping|billing)address$|house.?name/;
+        let addr1_re2 = /(^\\W*address)|(address\\W*$)|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|recipient|home|work|office|school|business|mail)[\\s\\-]+address|address\\s+(of|for|to|from)|street.*(house|building|apartment|floor)|(house|building|apartment|floor).*street/;
+
+        let addr2_re  = /address[_-]?line(2|two)|address2|addr2|street|suite|unit|address|line/;
+        let addr3_re  = /address.*line[3-9]|address[3-9]|addr[3-9]|street|line[3-9]/;
+
+        let country_re = /country|countries/;
+        let zip_re     = /zip|postal|post.*code|pcode|pin.?code/;
+
+
+        let city_re          = /city|town|suburb/;
+        let state_re         = /(?<!(united|hist|history).?)state|county|region|province|county|principality/;
+        let email_re         = /e.?mail/;
+        let fullname_re      = /^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name|name.*first.*last|firstandlastname|contact.?(name|person)/;
+        let firstname_re     = /first.*name|initials|fname|first$|given.*name/;
+        let mid_init_re      = /middle.*initial|m\\.i\\.|mi$|\\bmi\\b/;
+        let midname_re       = /middle.*name|mname|middle$/;
+        let lastname_re      = /last.*name|lname|surname(?!\\d)|last$|secondname|family.*name/;
+        let phone_re         = /phone|mobile|contact.?number/;
+        let phone_country_re = /country.*code|ccode|_cc|phone.*code|user.*phone.*code/;
+        let phone_area_re    = /area.*code|acode|area/;
+        let phone_ext_re     = /\\bext|ext\\b|extension/;
+        //let re = //;
+
+        var regs = [
+            company_re,
+            addr1_re,
+            addr1_re2,
+            addr2_re,
+            addr3_re,
+            country_re,
+            zip_re,
+            city_re,
+            state_re,
+            email_re,
+            fullname_re,
+            firstname_re,
+            mid_init_re,
+            midname_re,
+            lastname_re,
+            phone_re,
+            phone_country_re,
+            phone_area_re,
+            phone_ext_re,
         ];
+
 
         let name = el.getAttribute("name");
         let type = el.getAttribute("type");
 
+        if (name) {
+            name = name.toLowerCase();
+        }
+        if (type) {
+            type = type.toLowerCase();
+        }
 
-        if ( (name && potential_names.includes(name.toLowerCase())) ||
-         (type && potential_names.includes(type.toLowerCase())) ) {
-            return true;
+        for (let regex of regs) {
+            if (regex.test(name)) return true;
+            if (regex.test(type)) return true;
+
         }
 
         return false;
@@ -70,7 +123,6 @@ var recursivePropHasValue = (el, property,value, stopName="FORM") => {
     if (prop == value) return true;
 
     let parent = el.parentNode;
-    console.log(parent.nodeName, stopName);
     if (parent.nodeName == stopName || parent.nodeName == "BODY") return false;
 
     return recursivePropHasValue(parent, property, value);    
@@ -116,7 +168,6 @@ var hasAncestorOverflow = (el) => {
             // check if element is outside of parent's box 
             if (el_box.left   >= parent_box.right || el_box.right <= parent_box.right ||
                 el_box.bottom >= parent_box.top   || el_box.top   <= parent_box.bottom) {
-                console.log("overflow with ", parent);
                 return true;
             }
 
@@ -126,8 +177,6 @@ var hasAncestorOverflow = (el) => {
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box 
             if (el_box.left   >= parent_box.right || el_box.right <= parent_box.left) {
-                console.log("overflow with ", parent);
-
                 return true;
             }
 
@@ -137,8 +186,6 @@ var hasAncestorOverflow = (el) => {
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box 
             if (el_box.bottom >= parent_box.top   || el_box.top   <= parent_box.bottom) {
-                console.log("overflow with ", parent);
-
                 return true;
             }
 
@@ -152,9 +199,19 @@ var hasAncestorOverflow = (el) => {
 };
 
 var isHiddenByMargins = (el) => {
+    let oldX = window.scrollX;
+    let oldY = window.scrollY;
     let box = el.getBoundingClientRect();
-    if (box.right < 0 || box.left > (window.innerWidth || document.documentElement.clientWidth) ||
-        box.bottom < 0 || box.top > (window.innerHeight || document.documentElement.clientHeight)) {
+    window.scrollTo(box.x, box.y -  window.innerHeight/2);
+    
+    let w = (window.innerWidth || document.documentElement.clientWidth);
+    let h = (window.innerHeight || document.documentElement.clientHeight);
+    box = el.getBoundingClientRect();
+    window.scrollTo(oldX, oldY);
+
+
+    if (box.right < 0 || box.left > w ||
+        box.bottom < 0 || box.top > h) {
         return true
     }
     return false;
@@ -292,8 +349,6 @@ function investigateInputs(inputs) {
 
     }
 
-    console.log("testing");
-
     let result =  {"pageSuspicious": pageSuspicious, "inputs": form_inputs};
 
     return result;
@@ -336,7 +391,6 @@ function investigatePage() {
             formless_inputs.push(inp);
         }
     }
-    console.log("formless inputs", formless_inputs);
     let info = investigateInputs(formless_inputs);
     console.log('formless info', info);
 
