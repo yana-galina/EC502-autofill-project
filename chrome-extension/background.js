@@ -1,12 +1,13 @@
 // background.js
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-  	console.log('bg.js: ' + request);
+  	console.log('bg.js: ', request);
+    console.log('req has prop')
     if (request.pageSuspicious) {
       console.log("page suspicous")
         chrome.action.setBadgeText({text: "!"});
     }
-  	else if(request.count) {
+  	else if(request.hasOwnProperty("count")) {
         console.log("page not suspicous");
         chrome.action.setBadgeText({text: request.count.toString()});
     }
