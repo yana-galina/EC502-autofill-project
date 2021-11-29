@@ -13,77 +13,104 @@ function run_func(message) {
 }
 
 
+/* 
+These regular expressions were taken from
+https://source.chromium.org/chromium/chromium/src/+/main:out/chromeos-Debug/gen/components/autofill/core/browser/pattern_provider/default_regex_patterns.cc;
+*/
+
+const company_re = /company|business|organization|organisation/;
+
+const addr1_re  = /^address$|address[_-]?line(one)?|address1|addr1|street|(?:shipping|billing)address$|house.?name/;
+const addr1_re2 = /(^\\W*address)|(address\\W*$)|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|recipient|home|work|office|school|business|mail)[\\s\\-]+address|address\\s+(of|for|to|from)|street.*(house|building|apartment|floor)|(house|building|apartment|floor).*street/;
+
+const addr2_re  = /address[_-]?line(2|two)|address2|addr2|street|suite|unit|address|line/;
+const addr3_re  = /address.*line[3-9]|address[3-9]|addr[3-9]|street|line[3-9]/;
+
+const country_re = /country|countries/;
+const zip_re     = /zip|postal|post.*code|pcode|pin.?code/;
+
+
+const city_re          = /city|town|suburb/;
+const state_re         = /(?<!(united|hist|history).?)state|county|region|province|county|principality/;
+const email_re         = /e.?mail/;
+const fullname_re      = /^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name|name.*first.*last|firstandlastname|contact.?(name|person)/;
+const firstname_re     = /first.*name|initials|fname|first$|given.*name/;
+const mid_init_re      = /middle.*initial|m\\.i\\.|mi$|\\bmi\\b/;
+const midname_re       = /middle.*name|mname|middle$/;
+const lastname_re      = /last.*name|lname|surname(?!\\d)|last$|secondname|family.*name/;
+const phone_re         = /phone|mobile|contact.?number/;
+const phone_country_re = /country.*code|ccode|_cc|phone.*code|user.*phone.*code/;
+const phone_area_re    = /area.*code|acode|area/;
+const phone_ext_re     = /\\bext|ext\\b|extension/;
+//let re = //;
+
+const regs = [
+    company_re,
+    addr1_re,
+    addr1_re2,
+    addr2_re,
+    addr3_re,
+    country_re,
+    zip_re,
+    city_re,
+    state_re,
+    email_re,
+    fullname_re,
+    firstname_re,
+    mid_init_re,
+    midname_re,
+    lastname_re,
+    phone_re,
+    phone_country_re,
+    phone_area_re,
+    phone_ext_re,
+];
+
+
 
 
     // check if el has a name that could be exploited by autofill
 var hasRelevantName = (el) => {
-        /* 
-        These regular expressions were taken from
-        https://source.chromium.org/chromium/chromium/src/+/main:out/chromeos-Debug/gen/components/autofill/core/browser/pattern_provider/default_regex_patterns.cc;
-        */
-
-        let company_re = /company|business|organization|organisation/;
-
-        let addr1_re  = /^address$|address[_-]?line(one)?|address1|addr1|street|(?:shipping|billing)address$|house.?name/;
-        let addr1_re2 = /(^\\W*address)|(address\\W*$)|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|recipient|home|work|office|school|business|mail)[\\s\\-]+address|address\\s+(of|for|to|from)|street.*(house|building|apartment|floor)|(house|building|apartment|floor).*street/;
-
-        let addr2_re  = /address[_-]?line(2|two)|address2|addr2|street|suite|unit|address|line/;
-        let addr3_re  = /address.*line[3-9]|address[3-9]|addr[3-9]|street|line[3-9]/;
-
-        let country_re = /country|countries/;
-        let zip_re     = /zip|postal|post.*code|pcode|pin.?code/;
-
-
-        let city_re          = /city|town|suburb/;
-        let state_re         = /(?<!(united|hist|history).?)state|county|region|province|county|principality/;
-        let email_re         = /e.?mail/;
-        let fullname_re      = /^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name|name.*first.*last|firstandlastname|contact.?(name|person)/;
-        let firstname_re     = /first.*name|initials|fname|first$|given.*name/;
-        let mid_init_re      = /middle.*initial|m\\.i\\.|mi$|\\bmi\\b/;
-        let midname_re       = /middle.*name|mname|middle$/;
-        let lastname_re      = /last.*name|lname|surname(?!\\d)|last$|secondname|family.*name/;
-        let phone_re         = /phone|mobile|contact.?number/;
-        let phone_country_re = /country.*code|ccode|_cc|phone.*code|user.*phone.*code/;
-        let phone_area_re    = /area.*code|acode|area/;
-        let phone_ext_re     = /\\bext|ext\\b|extension/;
-        //let re = //;
-
-        var regs = [
-            company_re,
-            addr1_re,
-            addr1_re2,
-            addr2_re,
-            addr3_re,
-            country_re,
-            zip_re,
-            city_re,
-            state_re,
-            email_re,
-            fullname_re,
-            firstname_re,
-            mid_init_re,
-            midname_re,
-            lastname_re,
-            phone_re,
-            phone_country_re,
-            phone_area_re,
-            phone_ext_re,
-        ];
 
 
         let name = el.getAttribute("name");
         let type = el.getAttribute("type");
+        let placeholder = el.placeholder;
+        let autocomplete = el.autocomplete;
+        let labels = el.labels;
+
+
+        // label, placeholder, autocomplete and name fields all have impact on autofillability
+
 
         if (name) {
             name = name.toLowerCase();
         }
         if (type) {
-            type = type.toLowerCase();
+            type = type.toLowerCase(); 
+            if (type == "checkbox" || type == "radio" || type == "submit") {
+                return false;
+            }
+        }
+        if (placeholder) {
+            placeholder = placeholder.toLowerCase();
+        }
+        if (autocomplete) {
+            autocomplete = autocomplete.toLowerCase();
+            if (autocomplete !== "off") return true;
         }
 
         for (let regex of regs) {
             if (regex.test(name)) return true;
-            if (regex.test(type)) return true;
+            if (regex.test(placeholder)) return true;
+
+            if (labels) {
+                for (let label of labels) {
+                    if (regex.test(label.innerHTML.toLowerCase())) return true;
+                }
+
+            }
+      
 
         }
 
@@ -216,11 +243,11 @@ var isHiddenByMargins = (el) => {
 
     // scroll to current location of element in question
     let box = el.getBoundingClientRect();
-    window.scrollTo(box.x, box.y -  window.innerHeight/2);
+    window.scrollTo(box.x, box.y -  250);
     
 
-    let w = (window.innerWidth  || document.documentElement.clientWidth);
-    let h = (window.innerHeight || document.documentElement.clientHeight);
+    let w = (window.innerWidth );// || document.documentElement.clientWidth);
+    let h = (window.innerHeight);// || document.documentElement.clientHeight);
     box = el.getBoundingClientRect();
 
     // scroll back to old location so user experience isn't affected
@@ -237,7 +264,7 @@ var isHiddenByMargins = (el) => {
 
 
 
-function investigateInputs(inputs) {
+function investigateInputs(inputs, form_num) {
     /* Investigate a given collection of inputs */
     var form_inputs = [];
     let formHasVisibleRelevantInput = false;
@@ -253,7 +280,8 @@ function investigateInputs(inputs) {
                 'element': input, 
                 'name': input.name ? input.name : input.type ? input.type : "None",
                 'isSuspicious': false, 
-                'hasRelevantName': hasRelevantName(input)
+                'hasRelevantName': hasRelevantName(input),
+                'form_num': form_num,
         });
 
 
@@ -346,7 +374,11 @@ function investigateInputs(inputs) {
         console.log('form has visible relevant input and hidden relevant input');
     }
 
-    let result =  {"pageSuspicious": pageSuspicious, "inputs": form_inputs};
+    for (let inp of form_inputs) {
+        inp.formSuspicious = pageSuspicious;
+    }
+
+    let result =  {"formSuspicious": pageSuspicious, "inputs": form_inputs};
 
     return result;
 
@@ -363,20 +395,23 @@ function investigatePage() {
     var all_inputs  = [];
     var form_inputs = [];
 
+    var form_num = 0;
+
 
     var pageSuspicious = false;
 
     for (let form of forms) {
         // get all inputs that are a child of this form
         inputs      =  form.querySelectorAll("INPUT, SELECT");
-        let info = investigateInputs(inputs);
+        let info = investigateInputs(inputs, form_num);
         console.log('info', info);
 
-        if (info.pageSuspicious) {
+        if (info.formSuspicious) {
             pageSuspicious = true;
         }
 
         all_inputs.push(...info.inputs);
+        form_num += 1;
     }
 
 
@@ -389,10 +424,10 @@ function investigatePage() {
             formless_inputs.push(inp);
         }
     }
-    let info = investigateInputs(formless_inputs);
+    let info = investigateInputs(formless_inputs, form_num);
     console.log('formless info', info);
 
-    if (info.pageSuspicious) {
+    if (info.formSuspicious) {
         pageSuspicious = true;
     }
 
@@ -408,22 +443,37 @@ function investigatePage() {
         }
         susList += "</ul>";
 
+
+
         var warning_div = document.getElementById("autofill-warning-div")
 
-        let warn_inner  = '<span id="autofill-warn-close" style="float:right;">&times;</span> AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:'+ susList;
+        let warn_inner  = `<div style="padding:20px;background-color:red;color:white;border-radius:15px;font-weight: bold;width:50%;margin: 15% auto;">
+            <span id="autofill-warn-close" style="float:right;font-size: 28px;font-weight: bold;">&times;</span> AutofillSecurity: Warning! This form has the following hidden values, indicating that it may be trying to steal these values from you using autofill:' ${susList}
+            </div>`;
         if (warning_div) {
             warning_div.innerHTML = warn_inner;
         }
         else {
             var warning           = document.createElement('div');
             warning.id            = "autofill-warning-div";
-            warning.style.cssText = "padding:20px;background-color:red;color:white;border-radius:15px;font-weight: bold;position:fixed;width:50%;height:50%;z-index:100;margin: auto auto;";
+            warning.style.cssText = "position: fixed;z-index: 100;left: 0;top: 0;width: 100%;height: 100%;overflow: auto;";
+
+            // warning.style.cssText = "padding:20px;background-color:red;color:white;border-radius:15px;font-weight: bold;width:50%;margin: 15% auto;";
             warning.innerHTML     = warn_inner;
 
             document.body.appendChild(warning);
             document.getElementById ("autofill-warn-close").addEventListener ("click", () => {
                 warning.style.display = "none";
             });
+
+            // window.onclick = function(event) {
+            window.addEventListener ("click", () => {
+              if (event.target == warning) {
+                warning.style.display = "none";
+              }
+            });
+
+
 
         }
     }
