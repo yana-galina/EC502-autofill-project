@@ -1,5 +1,21 @@
 "use strict";
-browser.runtime.onMessage.addListener(count);
+browser.runtime.onMessage.addListener(  function(request, sender, sendResponse) {
+        console.log('bg.js: ', request);
+        console.log('req has prop')
+        if (request.pageSuspicious) {
+            console.log("page suspicous")
+            browser.browserAction.setBadgeText({text: "!"});
+            browser.browserAction.setBadgeBackgroundColor({color: "red"});
+
+        }
+        else if(request.hasOwnProperty("count")) {
+            console.log("page not suspicous");
+            browser.browserAction.setBadgeText({text: request.count.toString()});
+            browser.browserAction.setBadgeBackgroundColor({color: "blue"});
+
+        }
+    }
+);
 
 
 function onError(error) {
@@ -14,16 +30,10 @@ function sendMessageToTabs(tabs) {
         ).catch(onError);
     }
 }
-browser.tabs.onUpdated.addListener((tabId, changed) => {
-        browser.tabs.query({
+browser.tabs.onUpdated.addListener( (tabId, changed) => {
+    browser.tabs.query({
             currentWindow: true,
             active: true
         }).then(sendMessageToTabs).catch(onError);
     }
 )
-
-function count(message) {
-    if(message.count_suspicious) {
-        browser.browserAction.setBadgeText({text: message.count_suspicious.toString()});
-    }
-}
