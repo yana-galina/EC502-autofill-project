@@ -97,11 +97,13 @@ var hasRelevantName = (el) => {
         }
         if (autocomplete) {
             autocomplete = autocomplete.toLowerCase();
-            if (autocomplete !== "off") return true;
+            if (autocomplete !== "off" && autocomplete !== 'on') return true;
         }
 
         for (let regex of regs) {
-            if (regex.test(name)) return true;
+            if (!name.startsWith("form")) {
+                if (regex.test(name)) return true;
+            }
             if (regex.test(placeholder)) return true;
 
             if (labels) {

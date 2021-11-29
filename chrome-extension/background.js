@@ -6,10 +6,14 @@ chrome.runtime.onMessage.addListener(
     if (request.pageSuspicious) {
       console.log("page suspicous")
         chrome.action.setBadgeText({text: "!"});
+        chrome.action.setBadgeBackgroundColor({color: "red"});
+
     }
   	else if(request.hasOwnProperty("count")) {
         console.log("page not suspicous");
         chrome.action.setBadgeText({text: request.count.toString()});
+        chrome.action.setBadgeBackgroundColor({color: "blue"});
+
     }
   }
 );
