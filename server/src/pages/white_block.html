@@ -5,8 +5,9 @@
     <link rel="stylesheet" href="css/white_block.css">
   </head>
   <body>
+  <div>
   <h3>This form uses a white background overlay to cover up the hidden inputs.</h3>
-
+  </div>
     <div id="form">
       <form action="https://httpbin.org/post" method="post">
         <div id="visible-block">
@@ -39,7 +40,9 @@
         </p>
       </form>
     </div>
-    <div id="white-block"></div>
+    <div id="white-block" style="background-color: red;color:white;text-align: center;margin-left:250px;">
+      <p style="margin:auto;padding-top: 40%;">This block is meant to hide other form fields.</p>
+    </div>
     <!-- <script type="text/javascript">
       function onchangehandler(event) {
         // Print out its value. Could be a web request without users' knowledge.

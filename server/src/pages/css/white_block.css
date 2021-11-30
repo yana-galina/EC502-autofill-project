@@ -1,6 +1,6 @@
 #form {
 	position: fixed;
-	top: 10px;
+	top: 30px;
 	left: 10px;
 	z-index: 8;
 }
@@ -13,8 +13,9 @@
 	position: fixed;
 	top: 180px;
 	left: 10px;
-	width: 100%;
+	width: 300px;
 	height: 250px;
+	border-radius: 10px;
 	z-index: 9;
 	background-color: white;
 }

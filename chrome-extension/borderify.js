@@ -101,7 +101,8 @@ var hasRelevantName = (el) => {
         }
 
         for (let regex of regs) {
-            if (!name.startsWith("form")) {
+
+            if (name && !name.startsWith("form")) {
                 if (regex.test(name)) return true;
             }
             if (regex.test(placeholder)) return true;
