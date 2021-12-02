@@ -244,17 +244,49 @@ var isHiddenByMargins = (el) => {
     let oldX = window.scrollX;
     let oldY = window.scrollY;
 
-    // scroll to current location of element in question
-    let box = el.getBoundingClientRect();
-    window.scrollTo(box.x, box.y -  250);
-    
-
     let w = (window.innerWidth );// || document.documentElement.clientWidth);
     let h = (window.innerHeight);// || document.documentElement.clientHeight);
+
+    // scroll to current location of element in question
+    let box = el.getBoundingClientRect();
+
+    // check if element in bounds
+    // trivial reject
+    if (box.right  > 0 && box.left < w &&
+        box.bottom > 0 && box.top < h) {
+        return false
+    }
+
+
+    console.log("old box", box);
+    window.scrollTo(oldX + box.x, oldY +  box.top);
+    // window.scrollTo(0, box.y -  250);
+    
+
+
     box = el.getBoundingClientRect();
+    console.log("new box", box);
+    console.log("w", w, "h", h);
+
+    if (box.right < 0) {
+        console.log("left of screen");
+    }
+    if (box.left > w ) {
+        console.log("right of screen");
+    }
+    if (box.bottom < 0) {
+        console.log("top of screen");
+    }
+    if (box.top > h) {
+        console.log("bottom of screen");
+    }
 
     // scroll back to old location so user experience isn't affected
-    window.scrollTo(oldX, oldY);
+    window.scrollTo(oldX, oldY); // < this seems to work better?
+    // let newX = window.scrollX;
+    // let newY = window.scrollY;
+    // window.scrollTo(newX - oldX, newY - oldY);
+
 
     // get location of element when it has been scrolled to,
     // check if out of bounds of pages
