@@ -1,49 +1,50 @@
 <!doctype html>
 <html>
-  <head>
-    <title>White Block Overlap Form</title>
-    <link rel="stylesheet" href="css/white_block.css">
-  </head>
-  <body>
+
+<head>
+  <title>White Block Overlap Form</title>
+  <link rel="stylesheet" href="css/white_block.css">
+</head>
+
+<body>
   <div>
-  <h3>This form uses a white background overlay to cover up the hidden inputs.</h3>
+    <h3>This form uses a white background overlay to cover up the hidden inputs.</h3>
   </div>
-    <div id="form">
-      <form action="https://httpbin.org/post" method="post">
-        <div id="visible-block">
-          <p>
-            <label for="name">Name</label><br>
-            <input id="name" name="name" type="text" placeholder="Your Name">
-          </p>
-          <p>
-            <label for="email">Email</label><br>
-            <input id="email" name="email" type="email" placeholder="Your Email">
-          </p>
-          <p>
-            <input type="submit" value="Submit">
-          </p>
-        </div>
+  <div id="form">
+    <form action="https://httpbin.org/post" method="post">
+      <div id="visible-block">
         <p>
-          <input id="phone" name="phone" type="text" placeholder="Your Phone" >
+          <label for="name">Name</label><br>
+          <input id="name" name="name" type="text" placeholder="Your Name">
         </p>
         <p>
-          <input id="organization" name="organization" type="text" placeholder="Your Organization" >
+          <label for="email">Email</label><br>
+          <input id="email" name="email" type="email" placeholder="Your Email">
         </p>
         <p>
-          <input id="address" name="address" type="text" placeholder="Your Address" >
+          <input type="submit" value="Submit">
         </p>
-        <p>
-          <input id="postal" name="postal" type="text" placeholder="Your Postal Code" >
-        </p>
-        <p>
-          <input id="city" name="city" type="text" placeholder="Your City" >
-        </p>
-      </form>
-    </div>
-    <div id="white-block" style="background-color: red;color:white;text-align: center;margin-left:250px;">
-      <p style="margin:auto;padding-top: 40%;">This block is meant to hide other form fields.</p>
-    </div>
-    <!-- <script type="text/javascript">
+      </div>
+      <p>
+        <input id="phone" name="phone" type="text" placeholder="Your Phone">
+      </p>
+      <p>
+        <input id="organization" name="organization" type="text" placeholder="Your Organization">
+      </p>
+      <p>
+        <input id="address" name="address" type="text" placeholder="Your Address">
+      </p>
+      <p>
+        <input id="postal" name="postal" type="text" placeholder="Your Postal Code">
+      </p>
+      <p>
+        <input id="city" name="city" type="text" placeholder="Your City">
+      </p>
+    </form>
+  </div>
+  <div id="white-block">
+  </div>
+  <!-- <script type="text/javascript">
       function onchangehandler(event) {
         // Print out its value. Could be a web request without users' knowledge.
         console.log(event.target.name + ": " + event.target.value);
@@ -51,5 +52,6 @@
       // Apply 'input' event to every input element
       document.querySelectorAll('input').forEach(function(input) { input.addEventListener('input', onchangehandler); } );
     </script> -->
-  </body>
+</body>
+
 </html>
