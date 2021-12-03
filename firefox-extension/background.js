@@ -3,7 +3,9 @@ browser.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         console.log('bg.js: ', request);
         console.log('req has prop')
-        if (JSON.parse(request.pageSuspicious) || request.pageSuspicious) {
+        console.log(JSON.parse(request.pageSuspicious))
+        console.log(request.pageSuspicious)
+        if (JSON.parse(request.pageSuspicious) === true || request.pageSuspicious === true) {
             console.log("page suspicous")
             browser.browserAction.setBadgeText({text: "!"});
             browser.browserAction.setBadgeBackgroundColor({color: "red"});
