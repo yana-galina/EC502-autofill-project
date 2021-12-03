@@ -5,10 +5,12 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hidden Attribute Form</title>
+  <title>Out of Sight Form</title>
 </head>
 
 <body>
+  <h3>This form styles the inputs out of visible sight from the user.</h3>
+
   <form action="https://httpbin.org/post" method="post">
     <p>
       <label for="name">Name</label><br>
@@ -21,23 +23,23 @@
     <p>
       <input type="submit" value="Submit">
     </p>
-    <p style="width:0px;">
-      <input style="width:0px;height:0px;" id="phone" name="phone" type="text" placeholder="Your Phone">
+    <p >
+      <input style="width:0px;height:0px;border-style:none;" id="phone" name="phone" type="text" placeholder="Your Phone">
     </p>
-    <p style="width:0px;">
-      <input id="organization" name="organization" type="text" placeholder="Your Organization">
+    <p >
+      <input style="width:0px;height:0px;border-style:none;" id="organization" name="organization" type="text" placeholder="Your Organization">
     </p>
-    <p style="width:0px;">
-      <input id="address" name="address" type="text" placeholder="Your Address">
+    <p >
+      <input style="width:0px;height:0px;border-style:none;" id="address" name="address" type="text" placeholder="Your Address">
     </p>
-    <p style="width:0px;">
-      <input id="postal" name="postal" type="text" placeholder="Your Postal Code">
+    <p >
+      <input style="width:0px;height:0px;border-style:none;"id="postal" name="postal" type="text" placeholder="Your Postal Code">
     </p>
-    <p style="width:0px;">
-      <input id="city" name="city" type="text" placeholder="Your City">
+    <p >
+      <input style="width:0px;height:0px;border-style:none;" id="city" name="city" type="text" placeholder="Your City">
     </p>
-    <p style="width:0px;">
-      <select name="country">
+    <p >
+      <select style="width:0px;height:0px;border-style:none;" name="country">
         <option value=""></option>
         <option value="FI">Finland</option>
         <option value="AF">Afghanistan</option>
@@ -291,10 +293,10 @@
       </select>
     </p>
   </form>
-  <script type='module'>
+  <!-- <script type='module'>
     import { detect_script } from './detect_script.js';
     detect_script();
-  </script>
+  </script> -->
 </body>
 
 </html>

@@ -121,7 +121,7 @@ var hasRelevantName = (el) => {
 
 }
 
-var recursivePropHasValue = (el, property,value, stopName="FORM") => {
+var recursivePropHasValue = (el, property,value, stopName="BODY") => {
     var prop = window.getComputedStyle(el).getPropertyValue(property);
     if (prop == value) return true;
 
@@ -136,7 +136,7 @@ var recursivePropHasValue = (el, property,value, stopName="FORM") => {
 var getRecursivePropertySum = (el, property) => {
     var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return prop;
+    if (parent.nodeName == "BODY" || parent.nodeName == "BODY") return prop;
 
     return prop + getRecursivePropertySum(parent, property);
 };
@@ -145,7 +145,7 @@ var getRecursivePropertySum = (el, property) => {
 var getRecursivePropertyProduct = (el, property) => {
     var prop = parseFloat(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return prop;
+    if (parent.nodeName == "BODY" || parent.nodeName == "BODY") return prop;
 
     return prop*getRecursivePropertyProduct(parent, property);
 };
@@ -175,13 +175,18 @@ function hiddenBehindOtherElement(el) {
         let computedStyle = window.getComputedStyle(top_el);
 
 
-        if(computedStyle.visibility == 'hidden' ||
-            computedStyle.zIndex == 0 || 
-            computedStyle.opacity == 0 ||
-            computedStyle.display == 'none'
+        if(recursiveAttrHasValue(top_el, "hidden", true) ||
+            computedStyle.visibility == 'hidden' ||
+            computedStyle.visibility == "collapse" ||
+            // computedStyle.zIndex == 0 || 
+            getRecursivePropertyProduct(top_el, "opacity") < 0.1 ||
+            // computedStyle.opacity == 0 ||
+            recursivePropHasValue(top_el, "display", "none")
+            // computedStyle.display == 'none'
             // recursivePropHasValue(el2, "display", "none", "BODY")) continue;
         ) continue;
 
+        console.log("hidden el,", el, top_el);
         return true;
 
     }
@@ -257,16 +262,12 @@ var isHiddenByMargins = (el) => {
         return false
     }
 
-
-    console.log("old box", box);
     window.scrollTo(oldX + box.x, oldY +  box.top);
     // window.scrollTo(0, box.y -  250);
     
 
 
     box = el.getBoundingClientRect();
-    console.log("new box", box);
-    console.log("w", w, "h", h);
 
     if (box.right < 0) {
         console.log("left of screen");
@@ -282,10 +283,7 @@ var isHiddenByMargins = (el) => {
     }
 
     // scroll back to old location so user experience isn't affected
-    window.scrollTo(oldX, oldY); // < this seems to work better?
-    // let newX = window.scrollX;
-    // let newY = window.scrollY;
-    // window.scrollTo(newX - oldX, newY - oldY);
+    window.scrollTo(oldX, oldY);
 
 
     // get location of element when it has been scrolled to,
