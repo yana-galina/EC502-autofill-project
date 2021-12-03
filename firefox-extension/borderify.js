@@ -4,9 +4,11 @@ browser.runtime.onMessage.addListener(run_func);
 function run_func(message) {
     console.log("calling run_func in borderify.js")
     if(message.greeting === "run"){
+        console.log("refreshed");
         find_fields();
     }
     if(message.message === "start"){
+        console.log("clicked");
         find_fields();
         document.getElementById("autofill-warning-div").style.display = "none";
 
@@ -32,7 +34,7 @@ const zip_re     = /zip|postal|post.*code|pcode|pin.?code/;
 
 
 const city_re          = /city|town|suburb/;
-const state_re         = /(?<!(united|hist|history).?)state|county|region|province|county|principality/;
+const state_re         = /(?<!(united|hist|history).?)state|region|province|county|principality/;
 const email_re         = /e.?mail/;
 const fullname_re      = /^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name|name.*first.*last|firstandlastname|contact.?(name|person)/;
 const firstname_re     = /first.*name|initials|fname|first$|given.*name/;
@@ -89,7 +91,7 @@ var hasRelevantName = (el) => {
     }
     if (type) {
         type = type.toLowerCase();
-        if (type == "checkbox" || type == "radio" || type == "submit") {
+        if (type === "checkbox" || type === "radio" || type === "submit") {
             return false;
         }
     }
@@ -124,10 +126,10 @@ var hasRelevantName = (el) => {
 
 var recursivePropHasValue = (el, property,value, stopName="BODY") => {
     var prop = window.getComputedStyle(el).getPropertyValue(property);
-    if (prop == value) return true;
+    if (prop === value) return true;
 
     let parent = el.parentNode;
-    if (parent.nodeName == stopName || parent.nodeName == "BODY") return false;
+    if (parent.nodeName === stopName || parent.nodeName === "BODY") return false;
 
     return recursivePropHasValue(parent, property, value);
 };
@@ -137,7 +139,7 @@ var recursivePropHasValue = (el, property,value, stopName="BODY") => {
 var getRecursivePropertySum = (el, property) => {
     var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "BODY" || parent.nodeName == "BODY") return prop;
+    if (parent.nodeName === "BODY" || parent.nodeName === "BODY") return prop;
 
     return prop + getRecursivePropertySum(parent, property);
 };
@@ -146,17 +148,17 @@ var getRecursivePropertySum = (el, property) => {
 var getRecursivePropertyProduct = (el, property) => {
     var prop = parseFloat(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "BODY" || parent.nodeName == "BODY") return prop;
+    if (parent.nodeName === "BODY" || parent.nodeName === "BODY") return prop;
 
     return prop*getRecursivePropertyProduct(parent, property);
 };
 
 var recursiveAttrHasValue = (el, attr,value) => {
     var prop = el[attr];
-    if (prop == value) return true;
+    if (prop === value) return true;
 
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return false;
+    if (parent.nodeName === "FORM" || parent.nodeName === "BODY") return false;
 
     return recursiveAttrHasValue(parent, attr, value);
 };
@@ -170,15 +172,15 @@ function hiddenBehindOtherElement(el) {
 
     for (let i = 0; i< top_els.length; i++) {
         let top_el = top_els[i];
-        if (top_el == el) return false;
+        if (top_el === el) return false;
 
         if (top_el.contains(el)) continue;
         let computedStyle = window.getComputedStyle(top_el);
 
 
         if(recursiveAttrHasValue(top_el, "hidden", true) ||
-            computedStyle.visibility == 'hidden' ||
-            computedStyle.visibility == "collapse" ||
+            computedStyle.visibility === 'hidden' ||
+            computedStyle.visibility === "collapse" ||
             // computedStyle.zIndex == 0 ||
             getRecursivePropertyProduct(top_el, "opacity") < 0.1 ||
             // computedStyle.opacity == 0 ||
@@ -204,9 +206,9 @@ var hasAncestorOverflow = (el) => {
     let node = el;
     let parent = node.parentNode;
     var parent_style;
-    while (parent.nodeName != "FORM" && parent.nodeName != "BODY") {
+    while (parent.nodeName !== "FORM" && parent.nodeName !== "BODY") {
         parent_style = window.getComputedStyle(parent);
-        if (parent_style.overflow == 'hidden') {
+        if (parent_style.overflow === 'hidden') {
             let parent_box = parent.getBoundingClientRect();
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box
@@ -216,7 +218,7 @@ var hasAncestorOverflow = (el) => {
             }
 
         }
-        if (parent_style.overflowX == 'hidden') {
+        if (parent_style.overflowX === 'hidden') {
             let parent_box = parent.getBoundingClientRect();
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box
@@ -225,7 +227,7 @@ var hasAncestorOverflow = (el) => {
             }
 
         }
-        if (parent_style.overflowY == 'hidden') {
+        if (parent_style.overflowY === 'hidden') {
             let parent_box = parent.getBoundingClientRect();
             let el_box = el.getBoundingClientRect();
             // check if element is outside of parent's box
@@ -358,7 +360,7 @@ function investigateInputs(inputs, form_num) {
             }
 
             // check for  visibilit='hidden' or 'collapse' attack
-            if (computedStyle.visibility == 'hidden' || computedStyle.visibility == 'collapse') {
+            if (computedStyle.visibility === 'hidden' || computedStyle.visibility === 'collapse') {
                 console.log("visibility hidden attack");
                 form_inputs[i].isSuspicious      = true;
                 form_inputs[i].visibility_hidden = true;
@@ -366,8 +368,8 @@ function investigateInputs(inputs, form_num) {
             }
 
             // check for 0 width or height
-            if (window.getComputedStyle(input).width == "0px" ||
-                window.getComputedStyle(input).height == "0px") {
+            if (window.getComputedStyle(input).width === "0px" ||
+                window.getComputedStyle(input).height === "0px") {
                 console.log("width attack");
                 form_inputs[i].isSuspicious = true;
                 form_inputs[i].no_width     = true;
@@ -396,13 +398,15 @@ function investigateInputs(inputs, form_num) {
         }
 
 
-    };
+    }
 
     console.log("form inputs", form_inputs);
 
     // to count as a proper attack, a form must have:
     // (1) At least ONE visible field with a relevant name
     // (2) At least ONE hidden field with a relevant name
+    console.log(formHasVisibleRelevantInput);
+    console.log(formHasHiddenRelevantInput);
     if (formHasVisibleRelevantInput && formHasHiddenRelevantInput) {
         pageSuspicious = true;
         console.log('form has visible relevant input and hidden relevant input');
@@ -423,18 +427,15 @@ function investigateInputs(inputs, form_num) {
 function investigatePage() {
     // get all forms on a page
     const forms  = document.getElementsByTagName("FORM");
-    var margins = [];
-    var differing_margins = [];
     var inputs;
     var all_inputs  = [];
-    var form_inputs = [];
-
     var form_num = 0;
 
 
-    var pageSuspicious = false;
+    let pageSuspicious = false;
 
     for (let form of forms) {
+        console.log(`There are ${forms.length} forms`);
         // get all inputs that are a child of this form
         inputs      =  form.querySelectorAll("INPUT, SELECT");
         let info = investigateInputs(inputs, form_num);
