@@ -8,9 +8,12 @@ function run_func(message) {
     }
     if(message.message === "start"){
         find_fields();
+        document.getElementById("autofill-warning-div").style.display = "none";
 
     }
 }
+
+
 /*
 These regular expressions were taken from
 https://source.chromium.org/chromium/chromium/src/+/main:out/chromeos-Debug/gen/components/autofill/core/browser/pattern_provider/default_regex_patterns.cc;
@@ -64,38 +67,12 @@ const regs = [
     phone_ext_re,
 ];
 
-function hiddenBehindOtherElement(el) {
 
-    var el_box = el.getBoundingClientRect();
-
-    var top_els =  document.elementsFromPoint(el_box.x + el_box.width/2, el_box.y + el_box.height/2);
-
-    for (let i = 0; i< top_els.length; i++) {
-        let top_el = top_els[i];
-        if (top_el == el) return false;
-
-        if (top_el.contains(el)) continue;
-        let computedStyle = window.getComputedStyle(top_el);
-
-
-        if(computedStyle.visibility === 'hidden' ||
-            computedStyle.zIndex === '0' ||
-            computedStyle.opacity === '0' ||
-            computedStyle.display === 'none'
-            // recursivePropHasValue(el2, "display", "none", "BODY")) continue;
-        ) continue;
-
-        return true;
-
-    }
-
-
-    return false;
-}
 
 
 // check if el has a name that could be exploited by autofill
 var hasRelevantName = (el) => {
+
 
     let name = el.getAttribute("name");
     let type = el.getAttribute("type");
@@ -125,7 +102,8 @@ var hasRelevantName = (el) => {
     }
 
     for (let regex of regs) {
-        if (!name.startsWith("form")) {
+
+        if (name && !name.startsWith("form")) {
             if (regex.test(name)) return true;
         }
         if (regex.test(placeholder)) return true;
@@ -141,9 +119,10 @@ var hasRelevantName = (el) => {
     }
 
     return false;
+
 }
 
-var recursivePropHasValue = (el, property,value, stopName="FORM") => {
+var recursivePropHasValue = (el, property,value, stopName="BODY") => {
     var prop = window.getComputedStyle(el).getPropertyValue(property);
     if (prop == value) return true;
 
@@ -158,7 +137,7 @@ var recursivePropHasValue = (el, property,value, stopName="FORM") => {
 var getRecursivePropertySum = (el, property) => {
     var prop = parseInt(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return prop;
+    if (parent.nodeName == "BODY" || parent.nodeName == "BODY") return prop;
 
     return prop + getRecursivePropertySum(parent, property);
 };
@@ -167,7 +146,7 @@ var getRecursivePropertySum = (el, property) => {
 var getRecursivePropertyProduct = (el, property) => {
     var prop = parseFloat(window.getComputedStyle(el).getPropertyValue(property));
     let parent = el.parentNode;
-    if (parent.nodeName == "FORM" || parent.nodeName == "BODY") return prop;
+    if (parent.nodeName == "BODY" || parent.nodeName == "BODY") return prop;
 
     return prop*getRecursivePropertyProduct(parent, property);
 };
@@ -181,6 +160,42 @@ var recursiveAttrHasValue = (el, attr,value) => {
 
     return recursiveAttrHasValue(parent, attr, value);
 };
+
+
+function hiddenBehindOtherElement(el) {
+
+    var el_box = el.getBoundingClientRect();
+
+    var top_els =  document.elementsFromPoint(el_box.x + el_box.width/2, el_box.y + el_box.height/2);
+
+    for (let i = 0; i< top_els.length; i++) {
+        let top_el = top_els[i];
+        if (top_el == el) return false;
+
+        if (top_el.contains(el)) continue;
+        let computedStyle = window.getComputedStyle(top_el);
+
+
+        if(recursiveAttrHasValue(top_el, "hidden", true) ||
+            computedStyle.visibility == 'hidden' ||
+            computedStyle.visibility == "collapse" ||
+            // computedStyle.zIndex == 0 ||
+            getRecursivePropertyProduct(top_el, "opacity") < 0.1 ||
+            // computedStyle.opacity == 0 ||
+            recursivePropHasValue(top_el, "display", "none")
+            // computedStyle.display == 'none'
+            // recursivePropHasValue(el2, "display", "none", "BODY")) continue;
+        ) continue;
+
+        console.log("hidden el,", el, top_el);
+        return true;
+
+    }
+
+
+    return false;
+}
+
 
 
 var hasAncestorOverflow = (el) => {
@@ -235,17 +250,42 @@ var isHiddenByMargins = (el) => {
     let oldX = window.scrollX;
     let oldY = window.scrollY;
 
-    // scroll to current location of element in question
-    let box = el.getBoundingClientRect();
-    window.scrollTo(box.x, box.y -  250);
-
-
     let w = (window.innerWidth );// || document.documentElement.clientWidth);
     let h = (window.innerHeight);// || document.documentElement.clientHeight);
+
+    // scroll to current location of element in question
+    let box = el.getBoundingClientRect();
+
+    // check if element in bounds
+    // trivial reject
+    if (box.right  > 0 && box.left < w &&
+        box.bottom > 0 && box.top < h) {
+        return false
+    }
+
+    window.scrollTo(oldX + box.x, oldY +  box.top);
+    // window.scrollTo(0, box.y -  250);
+
+
+
     box = el.getBoundingClientRect();
+
+    if (box.right < 0) {
+        console.log("left of screen");
+    }
+    if (box.left > w ) {
+        console.log("right of screen");
+    }
+    if (box.bottom < 0) {
+        console.log("top of screen");
+    }
+    if (box.top > h) {
+        console.log("bottom of screen");
+    }
 
     // scroll back to old location so user experience isn't affected
     window.scrollTo(oldX, oldY);
+
 
     // get location of element when it has been scrolled to,
     // check if out of bounds of pages
@@ -257,8 +297,7 @@ var isHiddenByMargins = (el) => {
 };
 
 
-// The body of this function will be executed as a content script inside the
-// current page
+
 function investigateInputs(inputs, form_num) {
     /* Investigate a given collection of inputs */
     var form_inputs = [];
@@ -267,6 +306,7 @@ function investigateInputs(inputs, form_num) {
 
     var pageSuspicious = false;
     var bool_props = ["display_none", "no_opacity", "hidden_attr", "visibility_hidden", "hidden_behind", "no_width", "ancestor_overflow", "margin_hidden"]
+
 
     for (let i = 0; i < inputs.length; i++) {
         let input = inputs[i];
@@ -375,8 +415,8 @@ function investigateInputs(inputs, form_num) {
     let result =  {"formSuspicious": pageSuspicious, "inputs": form_inputs};
 
     return result;
-}
 
+}
 
 // The body of this function will be executed as a content script inside the
 // current page
@@ -476,13 +516,16 @@ function investigatePage() {
 
 }
 
+
+
 function find_fields() {
-    let results = investigatePage();
-    console.log("Investigated page: ", JSON.parse(JSON.stringify(results)));
-    console.log(results.inputs);
+    var results = investigatePage();
+    console.log("Investigated page: ", results);
+
     browser.runtime.sendMessage({
         "count": results.inputs.length,
-        "fields": JSON.parse(JSON.stringify(results.inputs)),
-        "pageSuspicious": results.pageSuspicious,
+        "fields": JSON.stringify(results.inputs),
+        "pageSuspicious": JSON.stringify(results.pageSuspicious),
     });
+
 }

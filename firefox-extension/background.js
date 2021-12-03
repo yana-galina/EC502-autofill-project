@@ -1,5 +1,6 @@
-"use strict";
-browser.runtime.onMessage.addListener(  function(request, sender, sendResponse) {
+// background.js
+browser.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
         console.log('bg.js: ', request);
         console.log('req has prop')
         if (request.pageSuspicious) {
@@ -18,22 +19,55 @@ browser.runtime.onMessage.addListener(  function(request, sender, sendResponse) 
 );
 
 
-function onError(error) {
-    console.error(`Error: ${error}`);
+
+async function sendMessageToTabs(tabs) {
+    for (let tab of tabs) {
+        try {
+            console.log("sending run msg to tabs");
+            browser.tabs.sendMessage(
+                tab.id,
+                {greeting: "run"}
+            );
+
+        }
+        catch (error) {
+            console.error(error);
+        }
+
+    }
 }
 
-function sendMessageToTabs(tabs) {
-    for (let tab of tabs) {
-        browser.tabs.sendMessage(
-            tab.id,
-            {greeting: "run"}
-        ).catch(onError);
+
+browser.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+    try{
+        console.log("tab onupdate")
+        let queryOptions = { active: true, currentWindow: true };
+        let ts = await browser.tabs.query(queryOptions);
+        console.log("update tab: " + ts);
+        sendMessageToTabs(ts);
+    } catch (error) {
+        console.error("got an error");
+
+        console.error("My error:" + error);
+
     }
-}
-browser.tabs.onUpdated.addListener( (tabId, changed) => {
-    browser.tabs.query({
-            currentWindow: true,
-            active: true
-        }).then(sendMessageToTabs).catch(onError);
+
+});
+
+
+
+browser.tabs.onActivated.addListener(async (tabId, changeInfo) => {
+    try{
+        console.log("tab onactivated")
+        let queryOptions = { active: true, currentWindow: true };
+        let ts = await browser.tabs.query(queryOptions);
+        console.log("activate tab: " + ts);
+        sendMessageToTabs(ts);
+    } catch (error) {
+        console.error("got an error");
+
+        console.error("My error:" + error);
+
     }
-)
+
+});
